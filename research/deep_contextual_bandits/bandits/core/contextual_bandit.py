@@ -39,12 +39,17 @@ def random_derangement(n):
             if v[0] != 0:
                 return tuple(v)
 def mixup(orig, rewards):
+    l = len(orig)
+    b = len(orig[0])
+    orig = np.concatenate(orig).astype(None).reshape((l, b))
+    # rewards = np.concatenate(rewards).astype(None).reshape(l)
     lam = np.random.beta(7, 2, size=len(orig))
     index = random_derangement(len(orig))
+    print(rewards.shape, rewards, rewards.dtype,index)
     shuffled = orig[index, :]
-    s_rewards = rewards[index]
-    mix_contexts =  np.array([ orig[i]*lam[i] + shuffled[i]*(1-lam[i]) if lam[i]> 0.5 else orig[i]*(1-lam[i]) + shuffled[i]*(lam[i]) for i in range(len(orig)])
-    mix_rewards = np.array([ rewards [i]*lam[i] + s_rewards[i]*(1-lam[i]) if lam[i]> 0.5 else reward[i]*(1-lam[i]) + s_rewards[i]*(lam[i]) for i in range(len(orig)])
+    s_rewards = rewards[[index]]
+    mix_contexts =  np.array([ orig[i]*lam[i] + shuffled[i]*(1-lam[i]) if lam[i]> 0.5 else orig[i]*(1-lam[i]) + shuffled[i]*(lam[i]) for i in range(len(orig))])
+    mix_rewards = np.array([ rewards [i]*lam[i] + s_rewards[i]*(1-lam[i]) if lam[i]> 0.5 else rewards[i]*(1-lam[i]) + s_rewards[i]*(lam[i]) for i in range(len(orig))])
     maj_rewards = rewards.copy()
     return mix_contexts, mix_rewards
 def run_mixup_contextual_bandit(context_dim, num_actions, dataset, algos):
@@ -67,33 +72,36 @@ def run_mixup_contextual_bandit(context_dim, num_actions, dataset, algos):
   cmab = ContextualBandit(context_dim, num_actions)
   cmab.feed_data(dataset)
 
-  df = pd.DataFrame({'conext':[], 'reward':[], 'action':[], 'algo':[]})
+  h_actions = np.empty((0, len(algos)), float)
+  h_rewards = np.empty((0, len(algos)), float)
+  mixup_every = 30
+  df = pd.DataFrame({'context':[], 'reward':[], 'action':[], 'algo':[]})
   # Run the contextual bandit process
   for i in range(num_contexts):
+    # print(i, " out of ", num_contexts)
     context = cmab.context(i)
     actions = [a.action(context) for a in algos]
     rewards = [cmab.reward(i, action) for action in actions]
     
-    hist_contexts = np.append(hist_contexts, context)
-    history_actions = np.append(history_actions, actions[0])
-    history_rewards = np.append(history_rewards, rewards[0])
    
     for j, a in enumerate(algos):
+      # print("orig_update ", context, actions[j], rewards[j])
       a.update(context, actions[j], rewards[j])
-      df.loc[i*len(algos)+j] = [context, actions[j], rewards[j], j]
+      df.loc[i*len(algos)+j] = [context, rewards[j], actions[j], j]
     
-    if i%mixup_every==0:
+    if (i+1)%mixup_every==0:
       for j, a in enumerate(algos):
-        df_a = df[df['algo'==j]]
+        df_a = df[df['algo']==j]
         uniq_actions = df_a['action'].unique()
         for act in uniq_actions:
-          df_fr = df_a[df_a['action'] in actions]
+          df_fr = df_a[df_a['action'] == act]
           my_contexts = df_fr['context'].values
           my_rewards = df_fr['reward'].values
           m_c, m_r = mixup(my_contexts, my_rewards)
           for mix_i in range(len(m_c)):
-                a.update(m_c[mix_i], act, m_r[mix_r])
-    df = pd.DataFrame({'conext':[], 'reward':[], 'action':[], 'algo':[]})
+                # print("my ypodate shape ", act, m_r[mix_i])
+                a.update(m_c[mix_i], int(act), m_r[mix_i])
+      df = pd.DataFrame({'context':[], 'reward':[], 'action':[], 'algo':[]})
     h_actions = np.vstack((h_actions, np.array(actions)))
     h_rewards = np.vstack((h_rewards, np.array(rewards)))
 
@@ -117,33 +125,21 @@ def run_contextual_bandit(context_dim, num_actions, dataset, algos):
   # Create contextual bandit
   cmab = ContextualBandit(context_dim, num_actions)
   cmab.feed_data(dataset)
-
+  h_actions = np.empty((0, len(algos)), float)
+  h_rewards = np.empty((0, len(algos)), float)
+  mixup_every = 30
   df = pd.DataFrame({'conext':[], 'reward':[], 'action':[], 'algo':[]})
   # Run the contextual bandit process
   for i in range(num_contexts):
+    print(i, " out of ", num_contexts)
     context = cmab.context(i)
     actions = [a.action(context) for a in algos]
     rewards = [cmab.reward(i, action) for action in actions]
-    
-    hist_contexts = np.append(hist_contexts, context)
-    history_actions = np.append(history_actions, actions[0])
-    history_rewards = np.append(history_rewards, rewards[0])
-   
+
     for j, a in enumerate(algos):
       a.update(context, actions[j], rewards[j])
       df.loc[i*len(algos)+j] = [context, actions[j], rewards[j], j]
-    
-#     if i%mixup_every==0:
-#       for j, a in enumerate(algos):
-#         df_a = df[df['algo'==j]]
-#         uniq_actions = df_a['action'].unique()
-#         for act in uniq_actions:
-#           df_fr = df_a[df_a['action'] in actions]
-#           my_contexts = df_fr['context'].values
-#           my_rewards = df_fr['reward'].values
-#           m_c, m_r = mixup(my_contexts, my_rewards)
-#           for mix_i in range(len(m_c)):
-#                 a.update(m_c[mix_i], act, m_r[mix_r])
+ 
     df = pd.DataFrame({'conext':[], 'reward':[], 'action':[], 'algo':[]})
     h_actions = np.vstack((h_actions, np.array(actions)))
     h_rewards = np.vstack((h_rewards, np.array(rewards)))
