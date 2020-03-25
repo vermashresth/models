@@ -45,7 +45,7 @@ def mixup(orig, rewards):
     # rewards = np.concatenate(rewards).astype(None).reshape(l)
     lam = np.random.beta(7, 2, size=len(orig))
     index = random_derangement(len(orig))
-    print(rewards.shape, rewards, rewards.dtype,index)
+#     print(rewards.shape, rewards, rewards.dtype,index)
     shuffled = orig[index, :]
     s_rewards = rewards[[index]]
     mix_contexts =  np.array([ orig[i]*lam[i] + shuffled[i]*(1-lam[i]) if lam[i]> 0.5 else orig[i]*(1-lam[i]) + shuffled[i]*(lam[i]) for i in range(len(orig))])
