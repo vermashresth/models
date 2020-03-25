@@ -78,7 +78,8 @@ def run_mixup_contextual_bandit(context_dim, num_actions, dataset, algos):
   df = pd.DataFrame({'context':[], 'reward':[], 'action':[], 'algo':[]})
   # Run the contextual bandit process
   for i in range(num_contexts):
-    # print(i, " out of ", num_contexts)
+    if i%100==0:
+      print(i, " out of ", num_contexts)
     context = cmab.context(i)
     actions = [a.action(context) for a in algos]
     rewards = [cmab.reward(i, action) for action in actions]
@@ -131,7 +132,8 @@ def run_contextual_bandit(context_dim, num_actions, dataset, algos):
   df = pd.DataFrame({'conext':[], 'reward':[], 'action':[], 'algo':[]})
   # Run the contextual bandit process
   for i in range(num_contexts):
-    print(i, " out of ", num_contexts)
+    if i%100==0:
+      print(i, " out of ", num_contexts)
     context = cmab.context(i)
     actions = [a.action(context) for a in algos]
     rewards = [cmab.reward(i, action) for action in actions]
