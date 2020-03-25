@@ -33,7 +33,7 @@ import os
 import tensorflow as tf
 
 from bandits.algorithms.bootstrapped_bnn_sampling import BootstrappedBNNSampling
-from bandits.core.contextual_bandit import run_contextual_bandit
+from bandits.core.contextual_bandit import run_contextual_bandit, run_mixup_contextual_bandit
 from bandits.data.data_sampler import sample_adult_data
 from bandits.data.data_sampler import sample_census_data
 from bandits.data.data_sampler import sample_covertype_data
@@ -202,11 +202,12 @@ def sample_data(data_type, num_contexts=None):
 def display_results(algos, opt_rewards, opt_actions, h_rewards, t_init, name):
   """Displays summary statistics of the performance of each algorithm."""
 
-  print('---------------------------------------------------')
-  print('---------------------------------------------------')
+  # print('---------------------------------------------------')
+  # print('---------------------------------------------------')
   print('{} bandit completed after {} seconds.'.format(
     name, time.time() - t_init))
   print('---------------------------------------------------')
+  
 
   performance_pairs = []
   for j, a in enumerate(algos):
@@ -223,6 +224,10 @@ def display_results(algos, opt_rewards, opt_actions, h_rewards, t_init, name):
   print([[elt, list(opt_actions).count(elt)] for elt in set(opt_actions)])
   print('---------------------------------------------------')
   print('---------------------------------------------------')
+  print('---------------------------------------------------')
+  print('---------------------------------------------------')
+  print('                ')
+  print('               ')
 
 
 def main(_):
@@ -426,29 +431,47 @@ def main(_):
                                            activate_decay=False)
 
   algos = [
-      UniformSampling('Uniform Sampling', hparams),
-      UniformSampling('Uniform Sampling 2', hparams),
-      FixedPolicySampling('fixed1', [0.75, 0.25], hparams),
-      FixedPolicySampling('fixed2', [0.25, 0.75], hparams),
-      PosteriorBNNSampling('RMS', hparams_rms, 'RMSProp'),
-      PosteriorBNNSampling('Dropout', hparams_dropout, 'RMSProp'),
-      PosteriorBNNSampling('BBB', hparams_bbb, 'Variational'),
+      # UniformSampling('Uniform Sampling', hparams),
+      # UniformSampling('Uniform Sampling 2', hparams),
+      # FixedPolicySampling('fixed1', [0.75, 0.25], hparams),
+      # FixedPolicySampling('fixed2', [0.25, 0.75], hparams),
+      # PosteriorBNNSampling('RMS', hparams_rms, 'RMSProp'),
+      # PosteriorBNNSampling('Dropout', hparams_dropout, 'RMSProp'),
+      # PosteriorBNNSampling('BBB', hparams_bbb, 'Variational'),
       NeuralLinearPosteriorSampling('NeuralLinear', hparams_nlinear),
       NeuralLinearPosteriorSampling('NeuralLinear2', hparams_nlinear2),
-      LinearFullPosteriorSampling('LinFullPost', hparams_linear),
-      BootstrappedBNNSampling('BootRMS', hparams_rms),
-      ParameterNoiseSampling('ParamNoise', hparams_pnoise),
-      PosteriorBNNSampling('BBAlphaDiv', hparams_alpha_div, 'AlphaDiv'),
-      PosteriorBNNSampling('MultitaskGP', hparams_gp, 'GP'),
+      # LinearFullPosteriorSampling('LinFullPost', hparams_linear),
+      # BootstrappedBNNSampling('BootRMS', hparams_rms),
+      # ParameterNoiseSampling('ParamNoise', hparams_pnoise),
+      # PosteriorBNNSampling('BBAlphaDiv', hparams_alpha_div, 'AlphaDiv'),
+      # PosteriorBNNSampling('MultitaskGP', hparams_gp, 'GP'),
   ]
 
   # Run contextual bandit problem
   t_init = time.time()
-  results = run_contextual_bandit(context_dim, num_actions, dataset, algos)
-  _, h_rewards = results
+  log_algos_my = [[] for i in range(len(algos))]
+  log_algos_their = [[] for i in range(len(algos))]
+  for i in range(10):
 
-  # Display results
-  display_results(algos, opt_rewards, opt_actions, h_rewards, t_init, data_type)
+    results = run_mixup_contextual_bandit(context_dim, num_actions, dataset, algos)
+    _, h_rewards = results
+    for j in range(len(algos)):
+      log_algos_my[j].append(np.sum(h_rewards[:, j]))
+    # Display results
+    display_results(algos, opt_rewards, opt_actions, h_rewards, t_init, data_type)
 
+    results = run_mixup_contextual_bandit(context_dim, num_actions, dataset, algos)
+    _, h_rewards = results
+
+    # Display results
+    display_results(algos, opt_rewards, opt_actions, h_rewards, t_init, data_type)
+    for j in range(len(algos)):
+      log_algos_their[j].append(np.sum(h_rewards[:, j]))
+    
+
+  print(log_algos_my, "my")
+  print(log_algos_their, "their")
+  print("algo 1 my vs their", sum(log_algos_my[0]), sum(log_algos_their[0]))
+  print("algo 2 my vs their", sum(log_algos_my[1]), sum(log_algos_their[1]))
 if __name__ == '__main__':
   app.run(main)
