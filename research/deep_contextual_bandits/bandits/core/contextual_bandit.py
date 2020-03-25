@@ -25,6 +25,18 @@ from __future__ import print_function
 
 import numpy as np
 
+def random_derangement(n):
+    while True:
+        v = list(range(n))
+        for j in range(n - 1, -1, -1):
+            p = random.randint(0, j)
+            if v[p] == j:
+                break
+            else:
+                v[j], v[p] = v[p], v[j]
+        else:
+            if v[0] != 0:
+                return tuple(v)
 
 def run_contextual_bandit(context_dim, num_actions, dataset, algos):
   """Run a contextual bandit problem on a set of algorithms.
@@ -48,16 +60,26 @@ def run_contextual_bandit(context_dim, num_actions, dataset, algos):
 
   h_actions = np.empty((0, len(algos)), float)
   h_rewards = np.empty((0, len(algos)), float)
-
+  mixup_every = 30
+  hist_contexts = np.array([])
+  history_actions = np.array([])
+  history_rewards = np.array([])
   # Run the contextual bandit process
   for i in range(num_contexts):
     context = cmab.context(i)
     actions = [a.action(context) for a in algos]
     rewards = [cmab.reward(i, action) for action in actions]
-
+    
+    hist_contexts = np.append(hist_contexts, context)
+    history_actions = np.append(history_actions, actions[0])
+    history_rewards = np.append(history_rewards, rewards[0])
+   
     for j, a in enumerate(algos):
       a.update(context, actions[j], rewards[j])
-
+    
+#     if i%mixup_every==0:
+      
+    
     h_actions = np.vstack((h_actions, np.array(actions)))
     h_rewards = np.vstack((h_rewards, np.array(rewards)))
 
