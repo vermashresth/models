@@ -460,7 +460,7 @@ def main(_):
     # Display results
     display_results(algos, opt_rewards, opt_actions, h_rewards, t_init, data_type)
 
-    results = run_mixup_contextual_bandit(context_dim, num_actions, dataset, algos)
+    results = run_contextual_bandit(context_dim, num_actions, dataset, algos)
     _, h_rewards = results
 
     # Display results
