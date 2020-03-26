@@ -199,9 +199,9 @@ def sample_data(data_type, num_contexts=None):
   return dataset, opt_rewards, opt_actions, num_actions, context_dim
 
 
-def display_results(algos, opt_rewards, opt_actions, h_rewards, t_init, name):
+def display_results(algos, opt_rewards, opt_actions, h_rewards, t_init, name, exp, id):
   """Displays summary statistics of the performance of each algorithm."""
-
+  print(exp, " exp ", id)
   # print('---------------------------------------------------')
   # print('---------------------------------------------------')
   print('{} bandit completed after {} seconds.'.format(
@@ -458,13 +458,13 @@ def main(_):
     for j in range(len(algos)):
       log_algos_my[j].append(np.sum(h_rewards[:, j]))
     # Display results
-    display_results(algos, opt_rewards, opt_actions, h_rewards, t_init, data_type)
+    display_results(algos, opt_rewards, opt_actions, h_rewards, t_init, data_type, "mix", i)
 
     results = run_contextual_bandit(context_dim, num_actions, dataset, algos)
     _, h_rewards = results
 
     # Display results
-    display_results(algos, opt_rewards, opt_actions, h_rewards, t_init, data_type)
+    display_results(algos, opt_rewards, opt_actions, h_rewards, t_init, data_type, "orig", i)
     for j in range(len(algos)):
       log_algos_their[j].append(np.sum(h_rewards[:, j]))
     
