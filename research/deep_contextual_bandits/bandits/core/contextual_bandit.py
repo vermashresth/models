@@ -88,7 +88,8 @@ def run_mixup_contextual_bandit(context_dim, num_actions, dataset, algos):
     for j, a in enumerate(algos):
       # print("orig_update ", context, actions[j], rewards[j])
       a.update(context, actions[j], rewards[j])
-      df.loc[i*len(algos)+j] = [context, rewards[j], actions[j], j]
+      df = df.append({'context':context, 'reward': rewards[j], 'action':actions[j],'algo':j}, ignore_index=True)
+
     
     if (i+1)%mixup_every==0:
       for j, a in enumerate(algos):
