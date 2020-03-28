@@ -125,7 +125,7 @@ def run_random_mixup_contextual_bandit(context_dim, num_actions, dataset, algos)
     h_actions = np.vstack((h_actions, np.array(actions)))
     h_rewards = np.vstack((h_rewards, np.array(rewards)))
 
-  return h_actions, h_rewards
+  return h_actions, h_rewards, algos
 
 def run_contrast_mixup_contextual_bandit(context_dim, num_actions, dataset, algos):
   """Run a contextual bandit problem on a set of algorithms.
@@ -189,7 +189,7 @@ def run_contrast_mixup_contextual_bandit(context_dim, num_actions, dataset, algo
     h_actions = np.vstack((h_actions, np.array(actions)))
     h_rewards = np.vstack((h_rewards, np.array(rewards)))
 
-  return h_actions, h_rewards
+  return h_actions, h_rewards, algos
 def run_mixup_contextual_bandit(context_dim, num_actions, dataset, algos):
   """Run a contextual bandit problem on a set of algorithms.
 
@@ -245,7 +245,7 @@ def run_mixup_contextual_bandit(context_dim, num_actions, dataset, algos):
     h_actions = np.vstack((h_actions, np.array(actions)))
     h_rewards = np.vstack((h_rewards, np.array(rewards)))
 
-  return h_actions, h_rewards
+  return h_actions, h_rewards, algos
 def run_contextual_bandit(context_dim, num_actions, dataset, algos):
   """Run a contextual bandit problem on a set of algorithms.
 
@@ -285,7 +285,7 @@ def run_contextual_bandit(context_dim, num_actions, dataset, algos):
     h_actions = np.vstack((h_actions, np.array(actions)))
     h_rewards = np.vstack((h_rewards, np.array(rewards)))
 
-  return h_actions, h_rewards
+  return h_actions, h_rewards, algos
 
 class ContextualBandit(object):
   """Implements a Contextual Bandit with d-dimensional contexts and k arms."""
