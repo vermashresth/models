@@ -233,17 +233,19 @@ def display_results(algos, opt_rewards, opt_actions, h_rewards, t_init, name, ex
 def main(_):
 
   # Problem parameters
-  num_contexts = 1000
-
+  num_contexts = 1500
+  num_test_contexts = 200
   # Data type in {linear, sparse_linear, mushroom, financial, jester,
   #                 statlog, adult, covertype, census, wheel}
   data_type = 'mushroom'
 
   # Create dataset
   sampled_vals = sample_data(data_type, num_contexts)
-  dataset_full, opt_rewards, opt_actions, num_actions, context_dim = sampled_vals
-  dataset_test = dataset_full[800:, :]
-  dataset = dataset_full[:800, :]
+  dataset, opt_rewards, opt_actions, num_actions, context_dim = sampled_vals
+  
+  # dataset = dataset_full[:200, :]
+  sampled_vals_t = sample_data(data_type, num_test_contexts)
+  dataset_test, opt_rewards_t, _, _, _ = sampled_vals_t
   # Define hyperparameters and algorithms
   hparams = tf.contrib.training.HParams(num_actions=num_actions)
 
@@ -475,7 +477,7 @@ def main(_):
     _, h_rewards = results
     for j in range(len(algos)):
       log_algos_my.append(["old mix", np.sum(h_rewards[:, j])])
-      log_algos_avg[0].append((opt_reward-np.sum(h_rewards[:, j]))/opt_reward)
+      log_algos_avg[0].append((np.sum(opt_rewards)-np.sum(h_rewards[:, j]))/np.sum(opt_rewards))
     # Display results
     display_results(al1, opt_rewards, opt_actions, h_rewards, t_init, data_type, "mix", i)
 
@@ -484,8 +486,8 @@ def main(_):
     _, h_rewards = results
     for j in range(len(algos)):
       log_algos_my.append(["random mix", np.sum(h_rewards[:, j])])
-      log_algos_avg[1].append(np.sum(h_rewards[:, j]))
-      log_algos_avg[1].append((opt_reward-np.sum(h_rewards[:, j]))/opt_reward)
+      # log_algos_avg[1].append(np.sum(h_rewards[:, j]))
+      log_algos_avg[1].append((np.sum(opt_rewards)-np.sum(h_rewards[:, j]))/np.sum(opt_rewards))
     # Display results
     display_results(al2, opt_rewards, opt_actions, h_rewards, t_init, data_type, "mix random", i)
 
@@ -494,7 +496,7 @@ def main(_):
     _, h_rewards = results
     for j in range(len(algos)):
       log_algos_my.append(["contrast mix", np.sum(h_rewards[:, j])])
-      log_algos_avg[2].append((opt_reward-np.sum(h_rewards[:, j]))/opt_reward)
+      log_algos_avg[2].append((np.sum(opt_rewards)-np.sum(h_rewards[:, j]))/np.sum(opt_rewards))
     
     # Display results
     display_results(al3, opt_rewards, opt_actions, h_rewards, t_init, data_type, "contrast mix", i)
@@ -505,7 +507,7 @@ def main(_):
     display_results(al4, opt_rewards, opt_actions, h_rewards, t_init, data_type, "orig", i)
     for j in range(len(algos)):
       log_algos_my.append(["orig", np.sum(h_rewards[:, j])])
-      log_algos_avg[3].append((opt_reward-np.sum(h_rewards[:, j]))/opt_reward)
+      log_algos_avg[3].append((np.sum(opt_rewards)-np.sum(h_rewards[:, j]))/np.sum(opt_rewards))
 
     print(log_algos_my, "my")
 
@@ -530,7 +532,7 @@ def main(_):
     _, h_rewards = results
     for j in range(len(algos)):
       log_algos_my.append(["old mix", np.sum(h_rewards[:, j])])
-      log_algos_avg_t[0].append((opt_reward-np.sum(h_rewards[:, j]))/opt_reward)
+      log_algos_avg_t[0].append((np.sum(opt_rewards_t)-np.sum(h_rewards[:, j]))/np.sum(opt_rewards_t))
     # Display results
     display_results(al1, opt_rewards, opt_actions, h_rewards, t_init, data_type, "mix", i)
 
@@ -539,7 +541,7 @@ def main(_):
     _, h_rewards = results
     for j in range(len(algos)):
       log_algos_my.append(["random mix", np.sum(h_rewards[:, j])])
-      log_algos_avg_t[1].append((opt_reward-np.sum(h_rewards[:, j]))/opt_reward)
+      log_algos_avg_t[1].append((np.sum(opt_rewards_t)-np.sum(h_rewards[:, j]))/np.sum(opt_rewards_t))
     # Display results
     display_results(al2, opt_rewards, opt_actions, h_rewards, t_init, data_type, "mix random", i)
 
@@ -548,7 +550,7 @@ def main(_):
     _, h_rewards = results
     for j in range(len(algos)):
       log_algos_my.append(["contrast mix", np.sum(h_rewards[:, j])])
-      log_algos_avg_t[2].append((opt_reward-np.sum(h_rewards[:, j]))/opt_reward)
+      log_algos_avg_t[2].append((np.sum(opt_rewards_t)-np.sum(h_rewards[:, j]))/np.sum(opt_rewards_t))
     
     # Display results
     display_results(al3, opt_rewards, opt_actions, h_rewards, t_init, data_type, "contrast mix", i)
@@ -559,7 +561,7 @@ def main(_):
     display_results(al4, opt_rewards, opt_actions, h_rewards, t_init, data_type, "orig", i)
     for j in range(len(algos)):
       log_algos_my.append(["orig", np.sum(h_rewards[:, j])])
-      log_algos_avg_t[3].append((opt_reward-np.sum(h_rewards[:, j]))/opt_reward)
+      log_algos_avg_t[3].append((np.sum(opt_rewards_t)-np.sum(h_rewards[:, j]))/np.sum(opt_rewards_t))
 
     print(log_algos_my, "my")
 
