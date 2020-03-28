@@ -233,7 +233,7 @@ def display_results(algos, opt_rewards, opt_actions, h_rewards, t_init, name, ex
 def main(_):
 
   # Problem parameters
-  num_contexts = 400
+  num_contexts = 1000
 
   # Data type in {linear, sparse_linear, mushroom, financial, jester,
   #                 statlog, adult, covertype, census, wheel}
@@ -241,9 +241,9 @@ def main(_):
 
   # Create dataset
   sampled_vals = sample_data(data_type, num_contexts)
-  dataset, opt_rewards, opt_actions, num_actions, context_dim = sampled_vals
-  dataset_test = dataset[200:, :]
-  dataset = dataset[:200, :]
+  dataset_full, opt_rewards, opt_actions, num_actions, context_dim = sampled_vals
+  dataset_test = dataset_full[800:, :]
+  dataset = dataset_full[:800, :]
   # Define hyperparameters and algorithms
   hparams = tf.contrib.training.HParams(num_actions=num_actions)
 
@@ -458,6 +458,11 @@ def main(_):
   log_algos_avg = [[] for i in range(4)]
   log_algos_avg_t = [[] for i in range(4)]
   for i in range(2):
+    # sampled_vals = sample_data(data_type, num_contexts)
+    # dataset_full, opt_rewards, opt_actions, num_actions, context_dim = sampled_vals
+    # dataset_test = dataset_full[800:, :]
+    # dataset = dataset_full[:800, :]
+
     al1 = [NeuralLinearPosteriorSampling('NeuralLinear2', hparams_nlinear2)]
     al2 = [NeuralLinearPosteriorSampling('NeuralLinear2', hparams_nlinear2)]
     al3 = [NeuralLinearPosteriorSampling('NeuralLinear2', hparams_nlinear2)]
@@ -470,7 +475,7 @@ def main(_):
     _, h_rewards = results
     for j in range(len(algos)):
       log_algos_my.append(["old mix", np.sum(h_rewards[:, j])])
-      log_algos_avg[0].append(np.sum(h_rewards[:, j]))
+      log_algos_avg[0].append((opt_reward-np.sum(h_rewards[:, j]))/opt_reward)
     # Display results
     display_results(al1, opt_rewards, opt_actions, h_rewards, t_init, data_type, "mix", i)
 
@@ -480,6 +485,7 @@ def main(_):
     for j in range(len(algos)):
       log_algos_my.append(["random mix", np.sum(h_rewards[:, j])])
       log_algos_avg[1].append(np.sum(h_rewards[:, j]))
+      log_algos_avg[1].append((opt_reward-np.sum(h_rewards[:, j]))/opt_reward)
     # Display results
     display_results(al2, opt_rewards, opt_actions, h_rewards, t_init, data_type, "mix random", i)
 
@@ -488,7 +494,7 @@ def main(_):
     _, h_rewards = results
     for j in range(len(algos)):
       log_algos_my.append(["contrast mix", np.sum(h_rewards[:, j])])
-      log_algos_avg[2].append(np.sum(h_rewards[:, j]))
+      log_algos_avg[2].append((opt_reward-np.sum(h_rewards[:, j]))/opt_reward)
     
     # Display results
     display_results(al3, opt_rewards, opt_actions, h_rewards, t_init, data_type, "contrast mix", i)
@@ -499,7 +505,7 @@ def main(_):
     display_results(al4, opt_rewards, opt_actions, h_rewards, t_init, data_type, "orig", i)
     for j in range(len(algos)):
       log_algos_my.append(["orig", np.sum(h_rewards[:, j])])
-      log_algos_avg[3].append(np.sum(h_rewards[:, j]))
+      log_algos_avg[3].append((opt_reward-np.sum(h_rewards[:, j]))/opt_reward)
 
     print(log_algos_my, "my")
 
@@ -520,29 +526,29 @@ def main(_):
       i[0].hparams.training_freq_network=10000
 
 
-    results = run_mixup_contextual_bandit(context_dim, num_actions, dataset_test, al1)
+    results = run_contextual_bandit(context_dim, num_actions, dataset_test, al1)
     _, h_rewards = results
     for j in range(len(algos)):
       log_algos_my.append(["old mix", np.sum(h_rewards[:, j])])
-      log_algos_avg_t[0].append(np.sum(h_rewards[:, j]))
+      log_algos_avg_t[0].append((opt_reward-np.sum(h_rewards[:, j]))/opt_reward)
     # Display results
     display_results(al1, opt_rewards, opt_actions, h_rewards, t_init, data_type, "mix", i)
 
 
-    results = run_random_mixup_contextual_bandit(context_dim, num_actions, dataset_test, al2)
+    results = run_contextual_bandit(context_dim, num_actions, dataset_test, al2)
     _, h_rewards = results
     for j in range(len(algos)):
       log_algos_my.append(["random mix", np.sum(h_rewards[:, j])])
-      log_algos_avg_t[1].append(np.sum(h_rewards[:, j]))
+      log_algos_avg_t[1].append((opt_reward-np.sum(h_rewards[:, j]))/opt_reward)
     # Display results
     display_results(al2, opt_rewards, opt_actions, h_rewards, t_init, data_type, "mix random", i)
 
 
-    results = run_contrast_mixup_contextual_bandit(context_dim, num_actions, dataset_test, al3)
+    results = run_contextual_bandit(context_dim, num_actions, dataset_test, al3)
     _, h_rewards = results
     for j in range(len(algos)):
       log_algos_my.append(["contrast mix", np.sum(h_rewards[:, j])])
-      log_algos_avg_t[2].append(np.sum(h_rewards[:, j]))
+      log_algos_avg_t[2].append((opt_reward-np.sum(h_rewards[:, j]))/opt_reward)
     
     # Display results
     display_results(al3, opt_rewards, opt_actions, h_rewards, t_init, data_type, "contrast mix", i)
@@ -553,7 +559,7 @@ def main(_):
     display_results(al4, opt_rewards, opt_actions, h_rewards, t_init, data_type, "orig", i)
     for j in range(len(algos)):
       log_algos_my.append(["orig", np.sum(h_rewards[:, j])])
-      log_algos_avg_t[3].append(np.sum(h_rewards[:, j]))
+      log_algos_avg_t[3].append((opt_reward-np.sum(h_rewards[:, j]))/opt_reward)
 
     print(log_algos_my, "my")
 
