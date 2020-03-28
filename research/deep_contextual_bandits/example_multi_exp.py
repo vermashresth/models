@@ -218,22 +218,22 @@ def display_results(algos, opt_rewards, opt_actions, h_rewards, t_init, name, ex
   for i, (name, reward) in enumerate(performance_pairs):
     print('{:3}) {:20}| \t \t total reward = {:10}.'.format(i, name, reward))
 
-  print('---------------------------------------------------')
+  # print('---------------------------------------------------')
   print('Optimal total reward = {}.'.format(np.sum(opt_rewards)))
   print('Frequency of optimal actions (action, frequency):')
   print([[elt, list(opt_actions).count(elt)] for elt in set(opt_actions)])
-  print('---------------------------------------------------')
-  print('---------------------------------------------------')
-  print('---------------------------------------------------')
-  print('---------------------------------------------------')
-  print('                ')
-  print('               ')
+  # print('---------------------------------------------------')
+  # print('---------------------------------------------------')
+  # print('---------------------------------------------------')
+  # print('---------------------------------------------------')
+  # print('                ')
+  # print('               ')
 
 
 def main(_):
 
   # Problem parameters
-  num_contexts = 500
+  num_contexts = 2000
   num_test_contexts = 200
   # Data type in {linear, sparse_linear, mushroom, financial, jester,
   #                 statlog, adult, covertype, census, wheel}
@@ -459,7 +459,9 @@ def main(_):
   log_algos_my = []
   log_algos_avg = [[] for i in range(4)]
   log_algos_avg_t = [[] for i in range(4)]
-  for i in range(2):
+  algos_avg = [[] for i in range(4)]
+  algos_avg_t = [[] for i in range(4)]
+  for i in range(10):
     # sampled_vals = sample_data(data_type, num_contexts)
     # dataset_full, opt_rewards, opt_actions, num_actions, context_dim = sampled_vals
     # dataset_test = dataset_full[800:, :]
@@ -478,6 +480,7 @@ def main(_):
     # al1 = tmp[0]
     for j in range(len(algos)):
       log_algos_my.append(["old mix", np.sum(h_rewards[:, j])])
+      algos_avg[0].append(np.sum(h_rewards[:, j]))
       log_algos_avg[0].append((np.sum(opt_rewards)-np.sum(h_rewards[:, j]))/np.sum(opt_rewards))
     # Display results
     display_results(al1, opt_rewards, opt_actions, h_rewards, t_init, data_type, "mix", i)
@@ -488,7 +491,7 @@ def main(_):
     # al2 = tmp[0]
     for j in range(len(algos)):
       log_algos_my.append(["random mix", np.sum(h_rewards[:, j])])
-      # log_algos_avg[1].append(np.sum(h_rewards[:, j]))
+      algos_avg[1].append(np.sum(h_rewards[:, j]))
       log_algos_avg[1].append((np.sum(opt_rewards)-np.sum(h_rewards[:, j]))/np.sum(opt_rewards))
     # Display results
     display_results(al2, opt_rewards, opt_actions, h_rewards, t_init, data_type, "mix random", i)
@@ -500,6 +503,7 @@ def main(_):
 
     for j in range(len(algos)):
       log_algos_my.append(["contrast mix", np.sum(h_rewards[:, j])])
+      algos_avg[2].append(np.sum(h_rewards[:, j]))
       log_algos_avg[2].append((np.sum(opt_rewards)-np.sum(h_rewards[:, j]))/np.sum(opt_rewards))
     
     # Display results
@@ -512,6 +516,7 @@ def main(_):
     display_results(al4, opt_rewards, opt_actions, h_rewards, t_init, data_type, "orig", i)
     for j in range(len(algos)):
       log_algos_my.append(["orig", np.sum(h_rewards[:, j])])
+      algos_avg[3].append(np.sum(h_rewards[:, j]))
       log_algos_avg[3].append((np.sum(opt_rewards)-np.sum(h_rewards[:, j]))/np.sum(opt_rewards))
 
     print(log_algos_my, "my")
@@ -541,6 +546,7 @@ def main(_):
     # al1 = tmp[0]
     for j in range(len(algos)):
       log_algos_my.append(["old mix", np.sum(h_rewards[:, j])])
+      algos_avg_t[0].append(np.sum(h_rewards[:, j]))
       log_algos_avg_t[0].append((np.sum(opt_rewards_t)-np.sum(h_rewards[:, j]))/np.sum(opt_rewards_t))
     # Display results
     display_results(al1, opt_rewards, opt_actions, h_rewards, t_init, data_type, "mix", i)
@@ -551,6 +557,7 @@ def main(_):
     # al2 = tmp[0]
     for j in range(len(algos)):
       log_algos_my.append(["random mix", np.sum(h_rewards[:, j])])
+      algos_avg_t[1].append(np.sum(h_rewards[:, j]))
       log_algos_avg_t[1].append((np.sum(opt_rewards_t)-np.sum(h_rewards[:, j]))/np.sum(opt_rewards_t))
     # Display results
     display_results(al2, opt_rewards, opt_actions, h_rewards, t_init, data_type, "mix random", i)
@@ -561,6 +568,7 @@ def main(_):
     # al3 = tmp[0]
     for j in range(len(algos)):
       log_algos_my.append(["contrast mix", np.sum(h_rewards[:, j])])
+      algos_avg_t[2].append(np.sum(h_rewards[:, j]))
       log_algos_avg_t[2].append((np.sum(opt_rewards_t)-np.sum(h_rewards[:, j]))/np.sum(opt_rewards_t))
     
     # Display results
@@ -573,14 +581,16 @@ def main(_):
     display_results(al4, opt_rewards, opt_actions, h_rewards, t_init, data_type, "orig", i)
     for j in range(len(algos)):
       log_algos_my.append(["orig", np.sum(h_rewards[:, j])])
+      algos_avg_t[3].append(np.sum(h_rewards[:, j]))
       log_algos_avg_t[3].append((np.sum(opt_rewards_t)-np.sum(h_rewards[:, j]))/np.sum(opt_rewards_t))
 
     print(log_algos_my, "my")
 
   for i, ex in enumerate(['orig mix', 'random mix', 'contrast mix', 'orig']):
-    print("TRAINNN", ex, " ", np.mean(log_algos_avg[i]))
+    print("TRAINNN", ex, " ", np.mean(log_algos_avg[i]), np.mean(algos_avg[i]))
   for i, ex in enumerate(['orig mix', 'random mix', 'contrast mix', 'orig']):
-    print("TESTTT", ex, " ", np.mean(log_algos_avg_t[i]))
+    print("TESTTT", ex, " ", np.mean(log_algos_avg_t[i]), np.mean(algos_avg_t[i]))
+
   
   
 if __name__ == '__main__':
