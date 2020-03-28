@@ -62,9 +62,9 @@ def contrast_mixup(c1, r1, c2, r2):
 # #     print(rewards.shape, rewards, rewards.dtype,index)
 #     shuffled = orig[index, :]
 #     s_rewards = rewards[[index]]
-    mix_contexts =  np.array([ c1[i]*lam[i] + c2d[i]*(1-lam[i]) if lam[i]> 0.5 else c1[i]*(1-lam[i]) + c2[i]*(lam[i]) for i in range(l)])
+    mix_contexts =  np.array([ c1[i]*lam[i] + c2[i]*(1-lam[i]) if lam[i]> 0.5 else c1[i]*(1-lam[i]) + c2[i]*(lam[i]) for i in range(l)])
     mix_rewards = np.array([ r1[i]*lam[i] + r2[i]*(1-lam[i]) if lam[i]> 0.5 else r1[i]*(1-lam[i]) + r2[i]*(lam[i]) for i in range(l)])
-    maj_rewards = rewards.copy()
+    # maj_rewards = rewards.copy()
     return mix_contexts, mix_rewards
 
 def run_random_mixup_contextual_bandit(context_dim, num_actions, dataset, algos):
@@ -98,7 +98,8 @@ def run_random_mixup_contextual_bandit(context_dim, num_actions, dataset, algos)
     context = cmab.context(i)
     actions = [a.action(context) for a in algos]
     rewards = [cmab.reward(i, action) for action in actions]
-    
+    # print(actions, 'actions')
+    # print(rewards, 'rewards')
    
     for j, a in enumerate(algos):
       # print("orig_update ", context, actions[j], rewards[j])
@@ -109,16 +110,17 @@ def run_random_mixup_contextual_bandit(context_dim, num_actions, dataset, algos)
     if (i+1)%mixup_every==0:
       for j, a in enumerate(algos):
         df_a = df[df['algo']==j]
+        # print(df_a[['action', 'reward']])
         uniq_actions = df_a['action'].unique()
 #         for act in uniq_actions:
 #         df_fr = df_a[df_a['action'] == act]
         my_contexts = df_a['context'].values
         my_rewards = df_a['reward'].values
-        my_actions = df_a['actions'].values
+        my_actions = df_a['action'].values
         m_c, m_r = mixup(my_contexts, my_rewards)
         for mix_i in range(len(m_c)):
-                # print("my ypodate shape ", act, m_r[mix_i])
-                a.update(m_c[mix_i], my_actions[mix_i], m_r[mix_i])
+                # print("my ypodate shape ", my_actions[mix_i])
+                a.update(m_c[mix_i], int(my_actions[mix_i]), m_r[mix_i])
       df = pd.DataFrame({'context':[], 'reward':[], 'action':[], 'algo':[]})
     h_actions = np.vstack((h_actions, np.array(actions)))
     h_rewards = np.vstack((h_rewards, np.array(rewards)))
@@ -168,8 +170,10 @@ def run_contrast_mixup_contextual_bandit(context_dim, num_actions, dataset, algo
       for j, a in enumerate(algos):
         df_a = df[df['algo']==j]
         uniq_actions = df_a['action'].unique()
-        other_acts = uniq_actions[random_derangement(len(unique_acts))]
-        pairs = [(uniq_actions[i], other_acts[i]) for i in range(unique_acts)]
+        indices = np.array(random_derangement(len(uniq_actions)))
+        # print(indices, uniq_actions)
+        other_acts = np.array(uniq_actions)[indices]
+        pairs = [(uniq_actions[i], other_acts[i]) for i in range(len(uniq_actions))]
         for a1, a2 in pairs:
           df_fr1 = df_a[df_a['action'] == a1]
           df_fr2 = df_a[df_a['action'] == a2]
@@ -180,7 +184,7 @@ def run_contrast_mixup_contextual_bandit(context_dim, num_actions, dataset, algo
           m_c, m_r = contrast_mixup(c1, r1, c2, r2)
           for mix_i in range(len(m_c)):
                 # print("my ypodate shape ", act, m_r[mix_i])
-                a.update(m_c[mix_i], df_fr1['action'][mix_i], m_r[mix_i])
+                a.update(m_c[mix_i], int(df_fr1['action'].iloc[mix_i]), m_r[mix_i])
       df = pd.DataFrame({'context':[], 'reward':[], 'action':[], 'algo':[]})
     h_actions = np.vstack((h_actions, np.array(actions)))
     h_rewards = np.vstack((h_rewards, np.array(rewards)))
