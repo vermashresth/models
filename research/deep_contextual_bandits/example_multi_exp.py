@@ -557,9 +557,9 @@ def main(_):
   ########
 
     print("starting test, switching off training")
-    for i in [al1, al2, al3, al4]:
-      i[0].update_freq_lr=10000
-      i[0].update_freq_nn=10000
+    for al_i in [al1, al2, al3, al4]:
+      al_i[0].update_freq_lr=10000
+      al_i[0].update_freq_nn=10000
     print("al1", al1[0].hparams.training_freq, "test")
 
 
