@@ -462,11 +462,14 @@ def main(_):
   log_algos_avg_t = [[] for i in range(5)]
   algos_avg = [[] for i in range(5)]
   algos_avg_t = [[] for i in range(5)]
-  for i in range(2):
-    # sampled_vals = sample_data(data_type, num_contexts)
-    # dataset_full, opt_rewards, opt_actions, num_actions, context_dim = sampled_vals
-    # dataset_test = dataset_full[800:, :]
-    # dataset = dataset_full[:800, :]
+  for i in range(5):
+    sampled_vals = sample_data(data_type, num_contexts)
+    dataset, opt_rewards, opt_actions, num_actions, context_dim = sampled_vals
+  
+    # dataset = dataset_full[:200, :]
+    sampled_vals_t = sample_data(data_type, num_test_contexts)
+    dataset_test, opt_rewards_t, _, _, _ = sampled_vals_t
+
     print("starting new chance")
     al1 = [NeuralLinearPosteriorSampling('NeuralLinear2', hparams_nlinear2)]
     al2 = [NeuralLinearPosteriorSampling('NeuralLinear2', hparams_nlinear2)]
@@ -606,7 +609,7 @@ def main(_):
     print(log_algos_my, "my")
 
   for i, ex in enumerate(['orig mix', 'random mix', 'contrast mix', 'orig', 'uniform']):
-    print("TRAINNN", ex, " ", np.mean(log_algos_avg[i]), np.mean(algos_avg[i]))
+    print("TRAINNN", ex, " ", np.mean(log_algos_avg[i]), np.mean(algos_avg[i]),  np.mean(reg_algos_avg[i]))
   for i, ex in enumerate(['orig mix', 'random mix', 'contrast mix', 'orig']):
     print("TESTTT", ex, " ", np.mean(log_algos_avg_t[i]), np.mean(algos_avg_t[i]))
 
